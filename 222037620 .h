@@ -2,11 +2,13 @@
 #include <ctype.h>
 #include <conio.h>
 
+#define TAM_MAX_LINHAS 40
 #define TAM_CODIGO 7
 #define TAM_CPF 15
 #define TAM_NOME 101
 #define TAM_CIDADE 35 //Pelo municipio Vila Bela da Santissima Trindade
 #define TAM_UF 3
+#define TAM_UF_VERIFICACAO 2
 #define CADASTRAR_PESSOA 1
 #define CONSULTAR_PESSOA 2
 #define LISTAR_PESSOAS_CIDADE 3
@@ -114,14 +116,22 @@ void cadastrar_pessoa() {
 
     // while (NOT(!) end of file)
     while ( !feof(arquivo)) {
-        fscanf(arquivo, "%[^\n]", cmpr.cpf);
-        fscanf(arquivo, "%[^\n]", cmpr.nome);
-        fscanf(arquivo, "%c\n", &cmpr.sexo);
-        fscanf(arquivo, "%d\n", &cmpr.dia);
-        fscanf(arquivo, "%d\n", &cmpr.mes);
-        fscanf(arquivo, "%d\n", &cmpr.ano);
-        fscanf(arquivo, "%[^\n]", cmpr.cidade);
-        fscanf(arquivo, "%[^\n]", cmpr.uf);
+        fscanf(arquivo, "%[^\n]\n", cmpr.cpf);
+        printf("%s\n", cmpr.cpf);
+        fscanf(arquivo, "%[^\n]\n", cmpr.nome);
+        printf("%s\n", cmpr.nome);
+        fscanf(arquivo, "%c\n\n", &cmpr.sexo);
+        printf("%c\n", cmpr.sexo);
+        fscanf(arquivo, "%d\n\n", &cmpr.dia);
+        printf("%d\n", cmpr.dia);
+        fscanf(arquivo, "%d\n\n", &cmpr.mes);
+        printf("%d\n", cmpr.mes);
+        fscanf(arquivo, "%d\n\n", &cmpr.ano);
+        printf("%d\n", cmpr.ano);
+        fscanf(arquivo, "%[^\n]\n", cmpr.cidade);
+        printf("%s\n", cmpr.cidade);
+        fscanf(arquivo, "%[^\n]\n", cmpr.uf);
+        printf("%s\n\n", cmpr.uf);
 
         // Checando se o CPF que li eh igual ao que digitado
         if (strcmp(reg.cpf, cmpr.cpf) == 0) {
@@ -143,7 +153,7 @@ void cadastrar_pessoa() {
     printf("Digite o sexo: ");
     scanf("%c", &reg.sexo);
     sexo_valido = 0;
-    if (reg.sexo == 'M' || reg.sexo == 'm'|| reg.sexo == 'F' reg.sexo == 'f') {
+    if (reg.sexo == 'M' || reg.sexo == 'm'|| reg.sexo == 'F' || reg.sexo == 'f') {
         sexo_valido = 1;
     }
     printf("Digite o dia de nascimento: ");
@@ -165,19 +175,23 @@ void cadastrar_pessoa() {
 
     cidades = fopen("uf_cidades.txt", "r"); // Abrindo o arquivo
     existe_cidade = 0;
-
+    
     // while (NOT(!) end of file)
     while ( !feof(cidades)) {
         
-        char line[4096];
-        fgets(line, 4096, cidades);
+        char line[TAM_MAX_LINHAS];
+        fgets(line, TAM_MAX_LINHAS, cidades);
         strncpy(cmprr.codigo, line, TAM_CODIGO);
-        fgets(line, 4096, cidades);
-        strncpy(cmprr.uf, line, TAM_UF);
-        fgets(line, 4096, cidades);
+        printf("%s\n", cmprr.codigo);
+        fgets(line, TAM_MAX_LINHAS, cidades);
+        strncpy(cmprr.uf, line, TAM_UF_VERIFICACAO);
+        printf("%s\n", cmprr.uf);
+        fgets(line, TAM_MAX_LINHAS, cidades);
         strncpy(cmprr.cidade_com_acento, line, strlen(reg.cidade));
-        fgets(line, 4096, cidades);
+        printf("%s\n", cmprr.cidade_com_acento);
+        fgets(line, TAM_MAX_LINHAS, cidades);
         strncpy(cmprr.cidade_sem_acento, line, strlen(reg.cidade));
+        printf("%s\n", cmprr.cidade_sem_acento);
         
         maiusculo(reg.cidade);
         maiusculo(cmprr.cidade_sem_acento);
@@ -198,24 +212,15 @@ void cadastrar_pessoa() {
     // while (NOT(!) end of file)
     while ( !feof(cidades)) {
         
-        char line[4096];
-        limpar_buffer();
-        fgets(line, 4096, cidades);
-        strncpy(cmprr.codigo, line, 7);
-        limpar_buffer();
-        fgets(line, 4096, cidades);
-        printf("%s\n", line);
-        strncpy(cmprr.uf, line, 2);
-        limpar_buffer();
-        printf("%s\n", line);
-        fgets(line, 4096, cidades);
+        char line[TAM_MAX_LINHAS];
+        fgets(line, TAM_MAX_LINHAS, cidades);
+        strncpy(cmprr.codigo, line, TAM_CODIGO);
+        fgets(line, TAM_MAX_LINHAS, cidades);
+        strncpy(cmprr.uf, line, TAM_UF_VERIFICACAO);
+        fgets(line, TAM_MAX_LINHAS, cidades);
         strncpy(cmprr.cidade_com_acento, line, strlen(reg.cidade));
-        limpar_buffer();
-        printf("%s\n", line);
-        fgets(line, 4096, cidades);
+        fgets(line, TAM_MAX_LINHAS, cidades);
         strncpy(cmprr.cidade_sem_acento, line, strlen(reg.cidade));
-        limpar_buffer();
-        printf("%s\n", line);
         
         
         maiusculo(reg.uf);
@@ -223,7 +228,7 @@ void cadastrar_pessoa() {
         // Checando se a UF que li eh igual ao que foi digitado
         if (strcmp(reg.uf, cmprr.uf) == 0) {
             existe_uf = 1;
-        } 
+        }
     }
     fclose(cidades); // Fechando o arquivo para nao dar problema de seguimento
     
@@ -238,22 +243,26 @@ void cadastrar_pessoa() {
                 if (sexo_valido == 1) {
                     if (data_valida == 1) {
                         if (existe_cidade == 1) {
-                            if (arquivo != NULL) {
-                                arquivo = fopen("cadastros.txt", "a");
-                                // Se nao der erro na abertura, entao...
-                                // Salvando os dados digitados no meu arquivo(aberto)
-                                fprintf(arquivo, "%s\n", reg.cpf);
-                                fprintf(arquivo, "%s\n", reg.nome);
-                                fprintf(arquivo, "%c\n", reg.sexo);
-                                fprintf(arquivo, "%d\n", reg.dia);
-                                fprintf(arquivo, "%d\n", reg.mes);
-                                fprintf(arquivo, "%d\n", reg.ano);
-                                fprintf(arquivo, "%s\n", reg.cidade);
-                                fprintf(arquivo, "%s\n", reg.uf);
-                                printf("Sucesso no cadastro da pessoa!\n");
-            
-                                // Fechamento do arquivo
-                                fclose(arquivo);
+                            if (existe_uf == 1) {
+                                if (arquivo != NULL) {
+                                    arquivo = fopen("cadastros.txt", "a");
+                                    // Se nao der erro na abertura, entao...
+                                    // Salvando os dados digitados no meu arquivo(aberto)
+                                    fprintf(arquivo, "%s\n", reg.cpf);
+                                    fprintf(arquivo, "%s\n", reg.nome);
+                                    fprintf(arquivo, "%c\n", reg.sexo);
+                                    fprintf(arquivo, "%d\n", reg.dia);
+                                    fprintf(arquivo, "%d\n", reg.mes);
+                                    fprintf(arquivo, "%d\n", reg.ano);
+                                    fprintf(arquivo, "%s\n", reg.cidade);
+                                    fprintf(arquivo, "%s\n", reg.uf);
+                                    printf("Sucesso no cadastro da pessoa!\n");
+                
+                                    // Fechamento do arquivo
+                                    fclose(arquivo);
+                                }
+                            } else {
+                                printf("UF invalida. Nao foi possivel conlcuir o cadastro.\n\n");
                             }
                         } else {
                             printf("Cidade invalida. Nao foi possivel concluir o cadastro\n\n");
@@ -333,7 +342,7 @@ int verificador_data(int dia, int mes, int ano) {
 }
 
 // Funcao para consultar pessoa
-void consultar_pessoa() {
+/**void consultar_pessoa() {
     FILE *arquivo;
     int cpf_valido;
     char cpf[TAM_CPF];
@@ -351,7 +360,7 @@ void consultar_pessoa() {
     }
     hub();
 }
-
+**/
 int verificar_cpf(char cpf[]) {
     int cpf_novo[TAM_CPF], tot_d1 = 0, tot_d2 = 0, digito_calculado, digito_usuario, i, a = 0, tam;
     int cpf_valido;
@@ -452,8 +461,94 @@ void maiusculo() {
     printf("%s", str);
 }
 
+void consultar_pessoa() {
+    FILE *arquivo = fopen("cadastros.txt", "r");
+    char line[TAM_MAX_LINHAS];
+    char cpf[TAM_CPF];
+    int encontrado = 0;
+    int i = 0;
+    printf("Informe o CPF cadastrado: ");
+    scanf("%s",cpf);
+
+    while (fgets(line, sizeof(line), arquivo)) {
+        if (strstr(line, cpf)) {
+            printf("%s", line);
+            encontrado = 1;
+            i = 6;
+        } else if (encontrado && i > 0) {
+            printf("%s", line);
+            i--;
+        } else if (encontrado && i == 0) {
+            break;
+        } else { 
+            printf("Usario não localizado.\n\n");
+            break;
+        }
+    }
+
+    fclose(arquivo);
+    hub();
+}
 
 
-
+void listarPessoas_cidade(){
+    //declaração de variaveis 
+    file *arq_usuarios;
+    usario infoUsuario;
+    cidade cidadeInformada, infoCidade;
+    char pessoas[QTD_PESSOAS] [TAM_MAX], auxiliar[TAM_MAX];
+    int cont = o, i, j, x;
+    
+    //Comando para ler a cidade escolhida
+    printf("Digite a cidade desejada: ");
+    limpa_buffer();
+    scanf("%[^\n]",cidadeInformada.nome_cidade);
+    
+    // Comanda de ler a UF da cidade desejada
+    printf("Digite a UF da cidade desejada: ");
+    limpa_buffer();
+    scanf("%[^\n]",cidadeInformada.uf);
+    
+    // Condicional para validar se a cidade se encontra no arquivo de municipios ou não
+    if(achar_cidade(cidadeInformada,nome_cidade, cidadeInformada.uf)== 0){
+    printf("Essa cidade nao consta no nosso banco de dados !\n");
+    } else {
+       // comando para abrir o arquivo com o cadastro dos usarios
+    arq_usuarios = fopen("pessoas.txt", "r");
+    if(arq_usuarios !n NULL){
+    // Repetição que vai percorrer o arquivo até o final
+    while(!feof(arq_usuarios)) {
+        fscanf(arq_usarios, "%[^\n]\n", infoUsuario.cpf);
+         fscanf(arq_usarios, "%[^\n]\n", infoUsuario.nomeCompleto);
+          fscanf(arq_usarios, "%[^\n]\n", infoUsuario.sexo);
+           fscanf(arq_usarios, "%[^\n]\n", infoUsuario.data_nasc);
+            fscanf(arq_usarios, "%[^\n]\n", infoUsuario.mes_nasc);
+             fscanf(arq_usarios, "%[^\n]\n", infoUsuario.ano_nasc);
+              fscanf(arq_usarios, "%[^\n]\n", infoCidade.nome_cidade);
+               fscanf(arq_usarios, "%[^\n]\n", infoCidade.uf);
+        if((strcmp(cidadeInformada.nome_cidade,infoCidade.nome_cidade) == 0) && (strcmp(cidadeInformada.uf, infoCidades.uf) == 0)){
+            cont++;
+        }
+    }
+    
+    for(i = 0; i <= cont; i++){
+        for(j = i + 1; j <= cont; j++){
+            x = strcmp(pessoas[i], pessoas[j]);
+            if(x > 0){
+                strcpy(auxiliar, pessoas[i]);
+                strcpy(pessoas[i], pessoas[j]);
+                strcpy(pessoas[j], auxiliar);
+            }
+        }
+    }
+    
+    for(i = 0; i <= cont; ii++){
+        printf("%s\n", pessoas[i]);
+    }
+    
+    }
+    
+    }
+}
 
 
