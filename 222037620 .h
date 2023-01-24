@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <conio.h>
 
-#define TAM_MAX_LINHAS 40
+#define TAM_MAX_LINHAS 101
 #define TAM_CODIGO 7
 #define TAM_CPF 15
 #define TAM_NOME 101
@@ -95,13 +95,13 @@ void cadastrar_pessoa() {
     int opcao_cadastro;
     int existe_cidade;
     int existe_uf;
-    
+
 
     // Instrucoes e entrada de dados
     limpar_buffer(); // Para ler uma string sem que haja lixo no buffer de entrada de dados
     printf("Digite o CPF: ");
     scanf("%[^\n]", reg.cpf);
-    
+
     // Verificando validez do CPF e existencia dupla
     // 1) Verificando se o CPF eh valido e retornando 1 (valido) e 0 (invalido)
     cpf_valido = 0;
@@ -117,21 +117,13 @@ void cadastrar_pessoa() {
     // while (NOT(!) end of file)
     while ( !feof(arquivo)) {
         fscanf(arquivo, "%[^\n]\n", cmpr.cpf);
-        printf("%s\n", cmpr.cpf);
         fscanf(arquivo, "%[^\n]\n", cmpr.nome);
-        printf("%s\n", cmpr.nome);
         fscanf(arquivo, "%c\n\n", &cmpr.sexo);
-        printf("%c\n", cmpr.sexo);
         fscanf(arquivo, "%d\n\n", &cmpr.dia);
-        printf("%d\n", cmpr.dia);
         fscanf(arquivo, "%d\n\n", &cmpr.mes);
-        printf("%d\n", cmpr.mes);
         fscanf(arquivo, "%d\n\n", &cmpr.ano);
-        printf("%d\n", cmpr.ano);
         fscanf(arquivo, "%[^\n]\n", cmpr.cidade);
-        printf("%s\n", cmpr.cidade);
         fscanf(arquivo, "%[^\n]\n", cmpr.uf);
-        printf("%s\n\n", cmpr.uf);
 
         // Checando se o CPF que li eh igual ao que digitado
         if (strcmp(reg.cpf, cmpr.cpf) == 0) {
@@ -142,13 +134,13 @@ void cadastrar_pessoa() {
     limpar_buffer();
     printf("Digite o nome completo: ");
     scanf("%[^\n]", reg.nome);
-    
+
     // Verificando se foram digitados apenas letras para a varivel reg.nome
     nome_valido = 0;
     if (verificador_letras(reg.nome) == 1) {
        nome_valido = 1;
     }
-    
+
     limpar_buffer();
     printf("Digite o sexo: ");
     scanf("%c", &reg.sexo);
@@ -167,15 +159,15 @@ void cadastrar_pessoa() {
     if (verificador_data(reg.dia, reg.mes, reg.ano) == 1) {
         data_valida = 1;
     }
-    limpar_buffer();
     printf("Digite a cidade: ");
+    limpar_buffer();
     scanf("%[^\n]", reg.cidade);
-    
+
     //  Verificando para saber se ja ha uma cidade igual a digitada no meu arquivo "uf_cidades.txt"
 
     cidades = fopen("uf_cidades.txt", "r"); // Abrindo o arquivo
     existe_cidade = 0;
-    
+
     // while (NOT(!) end of file)
     while ( !feof(cidades)) {
         fscanf(cidades, "%[^\n]\n", cmprr.codigo);
@@ -187,7 +179,7 @@ void cadastrar_pessoa() {
         // Checando se a cidade que li eh igual ao que foi digitado
         if (strcmp(reg.cidade, cmprr.cidade_sem_acento) == 0) {
             existe_cidade = 1;
-        } 
+        }
     }
     fclose(cidades); // Fechando o arquivo para nao dar problema de seguimento
     printf("Digite a UF: ");
@@ -200,7 +192,7 @@ void cadastrar_pessoa() {
 
     // while (NOT(!) end of file)
     while ( !feof(cidades)) {
-        
+
         char line[TAM_MAX_LINHAS];
         fgets(line, TAM_MAX_LINHAS, cidades);
         strncpy(cmprr.codigo, line, TAM_CODIGO);
@@ -210,8 +202,8 @@ void cadastrar_pessoa() {
         strncpy(cmprr.cidade_com_acento, line, strlen(reg.cidade));
         fgets(line, TAM_MAX_LINHAS, cidades);
         strncpy(cmprr.cidade_sem_acento, line, strlen(reg.cidade));
-        
-        
+
+
         maiusculo(reg.uf);
         maiusculo(cmprr.uf);
         // Checando se a UF que li eh igual ao que foi digitado
@@ -220,7 +212,7 @@ void cadastrar_pessoa() {
         }
     }
     fclose(cidades); // Fechando o arquivo para nao dar problema de seguimento
-    
+
 
 
 
@@ -246,7 +238,7 @@ void cadastrar_pessoa() {
                                     fprintf(arquivo, "%s\n", reg.cidade);
                                     fprintf(arquivo, "%s\n", reg.uf);
                                     printf("Sucesso no cadastro da pessoa!\n");
-                
+
                                     // Fechamento do arquivo
                                     fclose(arquivo);
                                 }
@@ -276,8 +268,8 @@ void cadastrar_pessoa() {
 
 int verificador_letras(char *nome){
     int i;
-    
-    
+
+
     i = 0;
     while (nome[i] != '\0') {
         if (!isalpha(nome[i]) && nome[i] != ' ') {
@@ -285,8 +277,8 @@ int verificador_letras(char *nome){
         } i++;
     }
     return 1;
-    
-    
+
+
     /**
     for (i = 0; texto[i] != '\0'; ++i){ //percorrer todos os carateres
         if (!isalpha(texto[i]) && texto[i] != ' '){ //se não for letra nem espaço
@@ -295,20 +287,20 @@ int verificador_letras(char *nome){
     }
     return 1; //retornar 1 indica que só tem letras
      **/
-    
+
 }
 
 int verificador_data(int dia, int mes, int ano) {
-    
+
     /** return 0 == invalido
         return 1 == valido **/
 
     // Verificando se o mês é válido
-    // Retorna 0 se for invalido 
+    // Retorna 0 se for invalido
     if (mes < 1 || mes > 12) {
         return 0;
     }
-    
+
 
     // Verificando se o dia é válido
     if (dia < 1) {
@@ -335,12 +327,12 @@ int verificador_data(int dia, int mes, int ano) {
     FILE *arquivo;
     int cpf_valido;
     char cpf[TAM_CPF];
-    
+
     limpar_buffer(); // Para ler uma string sem que haja lixo no buffer de entrada de dados
     printf("Digite o CPF: ");
     scanf(" %s", cpf);
-    
-    
+
+
     int verificador = verificar_cpf(cpf);
     if (verificador == 1) {
         printf("CPF valido\n\n");
@@ -353,8 +345,8 @@ int verificador_data(int dia, int mes, int ano) {
 int verificar_cpf(char cpf[]) {
     int cpf_novo[TAM_CPF], tot_d1 = 0, tot_d2 = 0, digito_calculado, digito_usuario, i, a = 0, tam;
     int cpf_valido;
-    
-    
+
+
     // Verificando validez do CPF e existencia dupla
     // 1) Verificando se o CPF eh valido e retornando 1 (valido) e 0 (invalido)
     tam = strlen(cpf);
@@ -368,14 +360,14 @@ int verificar_cpf(char cpf[]) {
         cpf_valido = 0; ///se o CPF tiver todos os números iguais ele é inválido.
     }
     else {
-        
+
         for (i = 0; i <= tam; i++) {
             if (cpf[i] != '.' && cpf[i] != '-') {
                 cpf_novo[a] = cpf[i] - 48;
                 a++;
             }
         }
-        
+
     /**
         while (i <= tam) {
             if(reg.cpf[i] != '.' && reg.cpf[i] != '-') {
@@ -384,12 +376,12 @@ int verificar_cpf(char cpf[]) {
            } i++;
     }
     **/
-        
+
         for (i = 0; i < 9; i++) {
             tot_d1 = tot_d1 + ((cpf_novo[i]) * (10 - i));
             tot_d2 = tot_d2 + ((cpf_novo[i]) * (11 - i));
         }
-    
+
     /**
         i=0;
         while (i < 9) {
@@ -427,13 +419,13 @@ int verificar_cpf(char cpf[]) {
 void hub() {
     int opcao_fim;
     printf("Digite 1 para voltar ao menu\n");
-    
+
     scanf("%d", &opcao_fim);
 }
 
 
 void verificar_cidade(char cidade[]){
-    
+
 }
 
 void maiusculo() {
@@ -441,7 +433,7 @@ void maiusculo() {
     char str[TAM_CIDADE];
     scanf ( "%[^\n]", str);
     TamStr = strlen(str);
-    
+
     i=0;
     do {
         str[i] = toupper (str[i]);
@@ -452,34 +444,42 @@ void maiusculo() {
 
 void consultar_pessoa() {
     FILE *arquivo = fopen("cadastros.txt", "r");
-    char line[TAM_MAX_LINHAS];
+    char linha[TAM_MAX_LINHAS];
     char cpf[TAM_CPF];
     int encontrado = 0;
-    int i = 0;
+    int i;
+    int cpf_valido;
+
     printf("Informe o CPF cadastrado: ");
     scanf("%s",cpf);
 
-    while (fgets(line, sizeof(line), arquivo)) {
-        if (strstr(line, cpf)) {
-            printf("%s", line);
-            encontrado = 1;
-            i = 6;
-        } else if (encontrado && i > 0) {
-            printf("%s", line);
-            i--;
-        } else if (encontrado && i == 0) {
-            break;
-        } else { 
-            printf("Usario não localizado.\n\n");
-            break;
+    // Verificando se o CPF eh valido e retornando 1 (valido) e 0 (invalido)
+    cpf_valido = 0;
+    int verificador = verificar_cpf(cpf);
+    if (verificador == 1) {
+        cpf_valido = 1;
+    }
+    if (cpf_valido == 1) {
+        i = 0;
+        while (fgets(linha, TAM_MAX_LINHAS, arquivo) != NULL) { // Lendo cada linha do meu arquivo
+            if (strstr(linha, cpf)) { // Apontando para a linha se o CPF lido for igual a linha lida
+                printf("%s", linha);
+                encontrado = 1;
+                i = 7; // i = 7 pois lendo 6 vezes ele para na cidade, sem imprimir a UF
+            } else if (encontrado && i > 0) { // Repeticao para imprimir todos os dados apos encontrar o CPF
+                printf("%s", linha);
+                i--;
+            } else if (encontrado && i == 0) { // Finalizando a repeticao quando i = 0, que no caso seria a UF
+                break;
+            } else { // Continuando o while loop em caso da linha lida nao ser igual ao CPF digitado
+                continue;
+            }
         }
     }
-
+    if (encontrado <= 0 || cpf_valido == 0) {
+        printf("CPF nao encontrado no sistema.\n\n");
+    }
+    printf("\n\n");
     fclose(arquivo);
     hub();
 }
-
-
-
-
-
