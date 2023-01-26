@@ -19,7 +19,7 @@ int verificador_letras();
 int verificador_data();
 int verificar_cpf();
 void hub();
-void maiusculo();
+char maiusculo();
 
 //Declarando um struct, que eh uma estrutura heterogenea (como um registro) para o tipo pessoa
 typedef struct pessoa {
@@ -428,18 +428,15 @@ void verificar_cidade(char cidade[]){
 
 }
 
-void maiusculo() {
-    int i, TamStr;
-    char str[TAM_CIDADE];
-    scanf ( "%[^\n]", str);
-    TamStr = strlen(str);
-
-    i=0;
-    do {
-        str[i] = toupper (str[i]);
-        i++;
-    } while (str[i] != '\0');
-    printf("%s", str);
+char maiusculo(char str[]) {
+    int i, tam_str;
+    
+    tam_str = strlen(str);
+    
+    for (i = 0; str[i] != '\0'; i++) {
+        str[i] = toupper(str[i]);
+    }
+    return str[TAM_CIDADE];
 }
 
 void consultar_pessoa() {
@@ -482,4 +479,42 @@ void consultar_pessoa() {
     printf("\n\n");
     fclose(arquivo);
     hub();
+}
+
+void listar_pessoas_cidade() {
+    FILE *cidades;
+    CIDADES cmprr;
+    char cidade[TAM_CIDADE];
+    int existe_cidade;
+    
+    printf("Digite a cidade: ");
+    limpar_buffer();
+    scanf(" %[^\n]", cidade);
+
+    //  Verificando para saber se ja ha uma cidade igual a digitada no meu arquivo "uf_cidades.txt"
+
+    cidades = fopen("uf_cidades.txt", "r"); // Abrindo o arquivo
+    existe_cidade = 0;
+
+    // while (NOT(!) end of file)
+    while ( !feof(cidades)) {
+        fscanf(cidades, " %[^\n]\n", cmprr.codigo);
+        fscanf(cidades, " %[^\n]\n", cmprr.uf);
+        fscanf(cidades, " %[^\n]\n", cmprr.cidade_com_acento);
+        fscanf(cidades, " %[^\n]\n", cmprr.cidade_sem_acento);
+        maiusculo(cidade);
+        maiusculo(cmprr.cidade_sem_acento);
+        printf("%s\n\n", cidade);
+        printf("%s\n\n", cmprr.cidade_sem_acento);
+        // Checando se a cidade que li eh igual ao que foi digitado
+        if (strcmp(cidade, cmprr.cidade_sem_acento) == 0) {
+            existe_cidade = 1;
+        }
+    }
+    fclose(cidades); // Fechando o arquivo para nao dar problema de seguimento
+    if (existe_cidade == 1) {
+        printf("A cidade existe\n\n");
+    } else {
+        printf("Cidade inexistente\n\n");
+    }
 }
