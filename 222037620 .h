@@ -482,10 +482,13 @@ void consultar_pessoa() {
 }
 
 void listar_pessoas_cidade() {
+    FILE *arquivo;
     FILE *cidades;
     CIDADES cmprr;
     char cidade[TAM_CIDADE];
     int existe_cidade;
+    int contador;
+    PESSOA cmpr;
     
     printf("Digite a cidade: ");
     limpar_buffer();
@@ -504,17 +507,40 @@ void listar_pessoas_cidade() {
         fscanf(cidades, " %[^\n]\n", cmprr.cidade_sem_acento);
         maiusculo(cidade);
         maiusculo(cmprr.cidade_sem_acento);
-        printf("%s\n\n", cidade);
-        printf("%s\n\n", cmprr.cidade_sem_acento);
         // Checando se a cidade que li eh igual ao que foi digitado
         if (strcmp(cidade, cmprr.cidade_sem_acento) == 0) {
             existe_cidade = 1;
         }
     }
     fclose(cidades); // Fechando o arquivo para nao dar problema de seguimento
+    
+    contador = 0;
     if (existe_cidade == 1) {
-        printf("A cidade existe\n\n");
+        arquivo = fopen("cadastros.txt", "r");
+        while ( !feof(arquivo)) {
+            fscanf(arquivo, "%[^\n]\n", cmpr.cpf);
+            fscanf(arquivo, "%[^\n]\n", cmpr.nome);
+            fscanf(arquivo, "%c\n\n", &cmpr.sexo);
+            fscanf(arquivo, "%d\n\n", &cmpr.dia);
+            fscanf(arquivo, "%d\n\n", &cmpr.mes);
+            fscanf(arquivo, "%d\n\n", &cmpr.ano);
+            fscanf(arquivo, "%[^\n]\n", cmpr.cidade);
+            fscanf(arquivo, "%[^\n]\n", cmpr.uf);
+            maiusculo(cidade);
+            maiusculo(cmpr.cidade);
+            // Checando se a cidade que li eh igual ao que digitado
+            if (strcmp(cidade, cmpr.cidade) == 0) {
+                contador++;
+            }
+        }
     } else {
-        printf("Cidade inexistente\n\n");
+        printf("Cidade invalida. Nao foi possivel listar pessoas por cidade.\n\n");
+    }
+    if (contador == 1) {
+        printf("Existe %d pessoa que mora em %s, cadastrada.\n\n", contador, cidade);
+    } else {
+        printf("Existem %d pessoas que moram em %s cadastradas.\n\n", contador, cidade);
     }
 }
+
+
