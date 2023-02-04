@@ -509,9 +509,15 @@ void excluir_pessoa () {
                      * 1° Excluindo o arquivo "cadastros.txt" antigo
                      * 2° Renomeando o arquivo "temp_cadastros.txt" para "cadastros.txt"
                     **/
-                    remove("cadastros.txt");
-                    rename("temp_cadastros.txt", "cadastros.txt");
-                    printf("CPF %s excluido com sucesso!\n", cpf_busca);
+                    int removed = remove("cadastros.txt");
+                    if (removed == 0) {
+                        int renamed = rename("temp_cadastros.txt", "cadastros.txt");
+                        if (renamed == 0) {
+                            printf("CPF %s excluido com sucesso!\n", cpf_busca);
+                        }
+                    } else {
+                        printf("Erro ao excluir cadastro.");
+                    }
                 }
             }else {
                 limpar_tela();
