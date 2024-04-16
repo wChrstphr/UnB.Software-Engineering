@@ -3,6 +3,48 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#define TAM_MAX_PALAVRA 500
+
+int verificarRepetida(const char *palavra, const char palavras_anteriores[][TAM_MAX_PALAVRA], int contadorPalavras)
+{
+    // Percorrendo o array de palavras anteriores
+    for (int i = 0; i < contadorPalavras; i++)
+    {
+        // Compara a palavra atual com cada palavra anterior no array
+        if (strcmp(palavra, palavras_anteriores[i]) == 0)
+        {
+            // Se encontrar uma correspondente, retorna verdadeiro ( 1 )
+            return 1;
+        }
+    }
+    return 0;
+}
+
+char *remover_acento(const char *palavra) {
+    char *sem_acentos = strdup(palavra); // Copia a palavra original para uma nova string
+    if (sem_acentos == NULL) {
+        fprintf(stderr, "Erro ao alocar memória.\n");
+        exit(1);
+    }
+
+    // Tabela de substituição de caracteres acentuados
+    char *acentos = "áàâãéèêíìîóòôõúùûçÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ";
+    char *sem_acentos_substitutos = "aaaaeeeiiioooouuucAAAAEEEIIIOOOOUUUC";
+    int tamanho = strlen(sem_acentos);
+
+    // Substituir cada caractere acentuado por seu equivalente sem acento
+    for (int i = 0; i < tamanho; i++) {
+        for (int j = 0; acentos[j] != '\0'; j++) {
+            if (sem_acentos[i] == acentos[j]) {
+                sem_acentos[i] = sem_acentos_substitutos[j];
+                break; // Interrompe o loop quando encontrar um caractere acentuado
+            }
+        }
+    }
+
+    return sem_acentos;
+}
+
 int namefilepointposition(char *fullname)
 {
     int i;
@@ -20,12 +62,15 @@ int namefilepointposition(char *fullname)
 int word2vec(char *pNomeArq)
 {
     FILE *arqent, *arqsaida;
-    char palavra[500];
-    char palavra_anterior[500] = "";
+    char *palavras_tokenizadas;
+    char palavra[500] = "";
+    char palavras_anteriores[500][TAM_MAX_PALAVRA];
     char nomarq[40];
     int pointidx = namefilepointposition(pNomeArq);
     int pp;
     int i;
+    int tamanho;
+    int contadorPalavras = 0;
 
     // Generating Output filename
     if (pointidx >= 0)
@@ -51,6 +96,43 @@ int word2vec(char *pNomeArq)
     }
     printf("Abri o arquivo!\n");
 
+    while (fscanf(arqent, "%s", palavra) != EOF)
+    {
+        int acentos = 0;
+        tamanho = strlen(palavra);
+
+        printf("\nPalavra: %s\n", palavra);
+        printf("Palavra sem acento: %s", remover_acento(palavra));
+        
+        // Convertendo letras maiúsculas em minúsculas
+        for (i = 0; palavra[i] != '\0'; i++)
+        {
+            palavra[i] = tolower(palavra[i]);
+            if (palavra[i] >= 'a' && palavra[i] <= 'z'); else {
+                acentos++;
+            }
+        }
+        printf("Acentos: %d\n", acentos);
+        
+        printf("Tamanho da palavra: %d\n", tamanho);
+        printf("Palavras minusculas: %s\n", palavra);
+        if (tamanho > (4 + acentos) && !verificarRepetida(palavra, palavras_anteriores, contadorPalavras))
+        {
+            // Tokenizando palavras e armazenando no arquivo de saída
+            palavras_tokenizadas = strtok(palavra, " .");
+            while (palavras_tokenizadas != NULL)
+            {
+                printf("Palavra lida: %s\n", palavras_tokenizadas);
+                fprintf(arqsaida, "%s, ", palavras_tokenizadas);
+                palavras_tokenizadas = strtok(NULL, " .");
+            }
+            // Copiando a palavra armazenada nas palavras anteriores para verificação futura
+            strcpy(palavras_anteriores[contadorPalavras], palavra);
+            contadorPalavras++;
+        }
+    }
+
+    /*
     fprintf(arqsaida, "[");
     while (fscanf(arqent, "%s", palavra) == 1) //passando por cada palavra
     {
@@ -67,8 +149,7 @@ int word2vec(char *pNomeArq)
             printf("Palavra: %s\n", palavra);
         }
     }
-    fprintf(arqsaida, "]");
-
+    */
     fclose(arqent);
     fclose(arqsaida);
 
@@ -81,7 +162,7 @@ int main()
     printf("Entre com nome do arquivo:\n");
     scanf("%s", nomearq);
 
-    if (!word2vec(nomearq))
+    if (!word2vec(nomearq)) // ou "word2vec(nomearq) == 0"
         printf("\nErro na geração do vocábulo!\n");
     else
         printf("\nGerei o vocábulo!\n");
