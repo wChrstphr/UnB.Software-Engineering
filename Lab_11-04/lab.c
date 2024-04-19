@@ -20,31 +20,6 @@ int verificarRepetida(const char *palavra, const char palavras_anteriores[][TAM_
     return 0;
 }
 
-char *remover_acento(const char *palavra) {
-    char *sem_acentos = strdup(palavra); // Copia a palavra original para uma nova string
-    if (sem_acentos == NULL) {
-        fprintf(stderr, "Erro ao alocar memória.\n");
-        exit(1);
-    }
-
-    // Tabela de substituição de caracteres acentuados
-    char *acentos = "áàâãéèêíìîóòôõúùûçÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ";
-    char *sem_acentos_substitutos = "aaaaeeeiiioooouuucAAAAEEEIIIOOOOUUUC";
-    int tamanho = strlen(sem_acentos);
-
-    // Substituir cada caractere acentuado por seu equivalente sem acento
-    for (int i = 0; i < tamanho; i++) {
-        for (int j = 0; acentos[j] != '\0'; j++) {
-            if (sem_acentos[i] == acentos[j]) {
-                sem_acentos[i] = sem_acentos_substitutos[j];
-                break; // Interrompe o loop quando encontrar um caractere acentuado
-            }
-        }
-    }
-
-    return sem_acentos;
-}
-
 int namefilepointposition(char *fullname)
 {
     int i;
@@ -99,24 +74,26 @@ int word2vec(char *pNomeArq)
     while (fscanf(arqent, "%s", palavra) != EOF)
     {
         int acentos = 0;
+        
         tamanho = strlen(palavra);
-
         printf("\nPalavra: %s\n", palavra);
-        printf("Palavra sem acento: %s", remover_acento(palavra));
         
         // Convertendo letras maiúsculas em minúsculas
         for (i = 0; palavra[i] != '\0'; i++)
         {
             palavra[i] = tolower(palavra[i]);
-            if (palavra[i] >= 'a' && palavra[i] <= 'z'); else {
+            if (palavra[i] >= 'a' && palavra[i] <= 'z' && tamanho > 4) {
+                tamanho = strlen(palavra) + 1;
+            } else {
                 acentos++;
+                tamanho -= acentos;
             }
         }
         printf("Acentos: %d\n", acentos);
         
         printf("Tamanho da palavra: %d\n", tamanho);
         printf("Palavras minusculas: %s\n", palavra);
-        if (tamanho > (4 + acentos) && !verificarRepetida(palavra, palavras_anteriores, contadorPalavras))
+        if (tamanho > 5 && !verificarRepetida(palavra, palavras_anteriores, contadorPalavras))
         {
             // Tokenizando palavras e armazenando no arquivo de saída
             palavras_tokenizadas = strtok(palavra, " .");
