@@ -2,7 +2,7 @@
 
 int main()
 {
-    // Inicializa ção na declara ção
+    // Inicialização na declaração
     int a[][5] = {{10, 6, 7, 12, 11}, {23, 32, 14, 52, 22}, {33, 17, 18, 54, 28}};
 
 
