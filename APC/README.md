@@ -1,16 +1,19 @@
-### Hi there 👋
+# Repositório de Projetos da Disciplina Algoritmos para Computadores (APC)
 
-<!--
-**wChrstphr/wChrstphr** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Este repositório tem como objetivo armazenar exercícios e laboratórios realizados na disciplina de **Algoritmos para Computadores** na Universidade de Brasília (FGA).
 
-Here are some ideas to get you started:
+## Descrição 
+Neste repositório, você encontrará o projeto final da disciplina, com objetido de gerenciar usuários e gerar insights a partir dos dados obtidos pelo sistema.
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Status 
+Atualmente concluído.
+
+
+## Tecnologias Utilizadas
+- Linguagem de programação (C).
+- Visual Studio Code.
+
+
+---
+
+*Com ❤️ e 📚 por Christopher (https://github.com/wChrstphr)*
