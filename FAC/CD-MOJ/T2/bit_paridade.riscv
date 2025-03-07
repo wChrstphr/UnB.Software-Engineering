@@ -1,0 +1,81 @@
+.data
+incorrect_entry_msg:    .asciz "entrada incorreta"    # Mensagem de erro para entrada inválida
+parity_bit_msg:       	.asciz "bit-paridade: "       # Mensagem prefixo para exibir o bit de paridade
+output_msg:    		.asciz "saida: "              # Mensagem prefixo para exibir o resultado final
+breakline:       	.asciz "\n"                   # Quebra de linha
+
+.text
+.globl _start
+
+# Entrada do usuário
+_start:
+    li      a7, 5                           # Syscall para leitura de numero
+    ecall                                   
+    add     t0, a0, zero                    # Move o valor lido (em 'a0') para 't0'
+
+# Validação da entrada
+    li      t5, 128                         # Carrega 128 em 't5'
+    bge     t0, t5, invalid_input           # Se o valor lido (em 't0') for maior ou igual a 128, salta para 'invald_input'
+    li      t5, 0
+    blt     t0, t5, invalid_input
+
+# Contagem de bits 1 no valor
+    li      t5, 0                           # Inicializa o contador de bits 1 (em 't5') com 0
+count_bits:
+    beqz    t0, calc_parity                 # Se 't0' for zero, salta para o cálculo de paridade
+    andi    t2, t0, 1                       # Realiza uma operação AND com 1 para obter o bit menos significativo
+    add     t5, t5, t2                      # Soma o bit extraído ao contador ('t5')
+    li      t2, 1                           # Carrega o valor 1 em `t2` (para o deslocamento)
+    srl     t0, t0, t2                      # Realiza um deslocamento lógico para a direita (tira o bit menos significativo)
+    j       count_bits                      # Repete o loop
+
+# Cálculo do bit de paridade
+calc_parity:
+    andi    t5, t5, 1                       # Calcula o bit de paridade (1 se o número de bits 1 for ímpar, 0 caso contrário)
+    li      t2, 128                         # Carrega o valor 128 (bit de paridade) em 't2'
+    add     t3, a0, zero                    # Move o valor original de entrada ('a0') para 't3'
+
+    beqz    t5, result_parity               # Se o bit de paridade for 0, salta para 'result_parity'
+    or      t3, t3, t2                      # Caso contrário, adiciona o bit de paridade ao valor original
+
+# Exibição dos resultados
+result_parity :
+    li      a7, 4                           # Syscall para escrita de String
+    la      a0, parity_bit_msg              # Carrega o endereço da mensagem "bit-paridade: " em 'a0'
+    ecall                                   # Realiza a chamada da syscall
+
+    li      a7, 1                           # Código de sistema para imprimir um número
+    add     a0, t5, zero                    # Move o bit de paridade calculado para 'a0'
+    ecall                                   # Realiza a chamada da syscall
+
+    li      a7, 4                           # Código de sistema para saída
+    la      a0, breakline                   # Carrega o endereço da quebra de linha em 'a0'
+    ecall                                   # Realiza a chamada da syscall
+    
+    li      a7, 4                           # Código de sistema para saída
+    la      a0, output_msg                  # Carrega o endereço da mensagem "saida: " em 'a0'
+    ecall                                   # Realiza a chamada da syscall
+
+    li      a7, 1                           # Código de sistema para imprimir um número
+    add     a0, t3, zero                    # Move o valor final (com paridade, se aplicável) para 'a0'
+    ecall                                   # Realiza a chamada da syscall
+
+    j end                                   # Finaliza o programa.
+
+# Tratamento de entrada inválida
+invalid_input:
+    la      a0, incorrect_entry_msg         # Carrega o endereço da mensagem "entrada incorreta" em 'a0'
+    li      a7, 4                           # Código de sistema para saída
+    ecall                                   # Realiza a chamada da syscall
+
+    j end				    # Finaliza o programa.
+
+# Finalização do programa
+end:
+    la      a0, breakline                   # Carrega o endereço da quebra de linha em 'a0'
+    li      a7, 4                           # Código de sistema para saída
+    ecall                                   # Realiza a chamada da syscall
+    
+    li      a7, 10                          # Código de sistema para encerrar o programa
+    ecall                                   # Finaliza o programa.
+

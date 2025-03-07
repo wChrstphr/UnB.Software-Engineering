@@ -1,0 +1,62 @@
+.data
+buffer: .space 33  # Espaço para a string de entrada (32 chars + nulo)
+newline: .asciz "\n"
+hex_chars: .asciz "0123456789abcdef"
+
+.text
+.globl main
+main:
+    # Ler entrada do usuário
+    li a7, 8            # syscall 8: read string
+    la a0, buffer       # carregar endereço do buffer
+    li a1, 33           # máximo de 32 caracteres + nulo
+    ecall
+
+    # Remover quebra de linha
+    la t0, buffer
+loop_remove_newline:
+    lb t1, 0(t0)        # carregar byte da string
+    beqz t1, convert_loop # se for nulo, terminar
+    li t2, 10           # código ASCII para '\n'
+    beq t1, t2, remove_newline
+    addi t0, t0, 1      # próximo caractere
+    j loop_remove_newline
+
+remove_newline:
+    sb zero, 0(t0)      # substituir '\n' por nulo
+
+    # Converter string para hexadecimal
+convert_loop:
+    la t0, buffer       # resetar ponteiro para início
+convert_next:
+    lb t1, 0(t0)        # carregar byte
+    beqz t1, end        # se for nulo, terminar
+    
+    # Obter os dois dígitos hexadecimais
+    srli t2, t1, 4      # parte alta do byte
+    andi t3, t1, 0xF    # parte baixa do byte
+    
+    la t4, hex_chars    # carregar tabela de caracteres hexadecimais
+    add t2, t2, t4
+    add t3, t3, t4
+    
+    lb a0, 0(t2)        # carregar caractere hexadecimal alto
+    li a7, 11           # syscall 11: print char
+    ecall
+    
+    lb a0, 0(t3)        # carregar caractere hexadecimal baixo
+    li a7, 11           # syscall 11: print char
+    ecall
+    
+    addi t0, t0, 1      # próximo caractere
+    j convert_next
+
+end:
+    # Imprimir nova linha
+    li a7, 4
+    la a0, newline
+    ecall
+    
+    # Encerrar programa
+    li a7, 10           # syscall 10: exit
+    ecall

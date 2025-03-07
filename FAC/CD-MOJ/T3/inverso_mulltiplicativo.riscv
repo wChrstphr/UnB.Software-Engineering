@@ -1,0 +1,180 @@
+.data
+	prompt:    		.asciz "Entradas invalidas\n"
+	not_prime_text: .asciz "O modulo nao eh primo\n"
+	output:    		.asciz "inverso = "
+	newline:   		.asciz "\n"
+
+    .text
+    .globl _start
+    
+_start:
+	# Leitura de a e p
+read_inputs:
+    # Lendo o primeiro número, mod (primo p)
+    li a7, 5              # Syscall para ler inteiro
+    ecall
+    mv s0, a0             # s0 = p (registrador preservado)
+
+    # Lendo o segundo número, a
+    li a7, 5              # Syscall para ler inteiro
+    ecall
+    mv s1, a0             # s1 = a
+
+validate_inputs:
+    # Validar se 'p' > 1 e 'a' > 1
+    li t2, 1
+    ble s0, t2, wrong_input   # Se p <= 1, entradas inválidas
+    ble s1, t2, wrong_input   # Se a <= 1, entradas inválidas
+
+check_prime_p:
+    # Verificar se p é primo
+    mv a0, s0
+    jal check_prime
+    beq a1, zero, not_prime_msg  # Se não é primo, mensagem de erro
+
+coprime_check:
+    # Verificar se a é múltiplo de p (se são coprimos)
+    rem t3, s0, s1           # t3 = a % p
+    beq t3, zero, wrong_input # Se a % p == 0, entradas inválidas
+
+modular_inverse:
+    # Calcular o inverso modular
+    mv a0, s1                # a0 = a
+    mv a1, s0                # a1 = p
+    jal modinv
+    ble a3, zero, wrong_input # Se não existe inverso, entradas inválidas
+
+output_result:
+    # Imprimir "inverso = "
+    la a0, output
+    li a7, 4                 # Syscall para imprimir string
+    ecall
+
+    # Imprimir o inverso
+    mv a0, a3
+    li a7, 1                 # Syscall para imprimir inteiro
+    ecall
+
+    # Imprimir nova linha
+    la a0, newline
+    li a7, 4
+    ecall
+
+    j exit                   # Finalizar execução
+
+modinv:
+    # Funcao para calcular o inverso modular de a (a0) mod m (a1)
+    # O resultado é armazenado em a3
+
+    # Iniciando variáveis
+    mv t0, a0            # t0 = r_ant = a
+    mv t1, a1            # t1 = r = m
+    li t2, 1             # t2 = s_ant = 1
+    li t3, 0             # t3 = s = 0
+
+loop_mod:
+    # Verifica se r == 0, caso afirmativo sai do loop
+    beq t1, zero, done   
+
+    # Calcula quociente (quotient = r_ant / r)
+    div t4, t0, t1       
+
+    # Atualiza r usando r_ant e r
+    mul t5, t4, t1       # t5 = quotient * r
+    sub t5, t0, t5       # t5 = r_ant - quotient * r
+    mv t0, t1            # t0 = r_ant = r
+    mv t1, t5            # t1 = r = r_ant - quotient * r
+
+    # Atualiza s usando s_ant e s
+    mul t6, t4, t3       # t6 = quotient * s
+    sub t6, t2, t6       # t6 = s_ant - quotient * s
+    mv t2, t3            # t2 = s_ant = s
+    mv t3, t6            # t3 = s = temp
+
+    # Recomeça o loop
+    j loop_mod           
+
+done:
+    # Verifica se o inverso existe (gcd(a, m) == 1)
+    li t5, 1
+    bne t0, t5, mod_fail     # Se gcd != 1, inverso não existe
+
+    # Calcula inverso modular = s_ant % m
+    rem a3, t2, a1       # a3 = s_ant % m
+    blt a3, zero, mod_fix # Se a3 < 0, ajusta adicionando m
+    jr ra                # Retorna da função
+
+mod_fix:
+    add a3, a3, a1       # Corrige o módulo adicionando m
+    jr ra                # Retorna da função
+
+mod_fail:
+    li a3, -1            # Define o inverso como 0 indicando falha
+    jr ra                # Retorna da função
+
+
+check_prime:
+    # Função para verificar se o input p é primo
+    # Retorno: 0 para não primo e 1 para primo, em a1
+
+    # Verificar se n <= 1
+    li t0, 1              # t0 = 1
+    ble a0, t0, not_prime # Se n <= 1, não é primo
+
+    # Verificar se n == 2 (único primo par)
+    li t0, 2              # t0 = 2
+    beq a0, t0, is_prime  # Se n == 2, é primo
+
+    # Inicializar contador de divisores
+    li t1, 0              # t1 = divisor_count = 0
+    li t2, 1              # t2 = divisor_candidate = 1
+
+count_divisors_loop:
+    # Verificar se divisor_candidate divide n
+    rem t3, a0, t2        # t3 = n % divisor_candidate
+    beq t3, zero, increment_count # Se n % divisor_candidate == 0, incrementar contador
+
+    j skip_increment
+
+increment_count:
+    addi t1, t1, 1        # divisor_count++
+
+skip_increment:
+    # Incrementar divisor_candidate
+    addi t2, t2, 1        # divisor_candidate++
+
+    # Continuar até divisor_candidate > n
+    bgt t2, a0, end_divisor_check
+    j count_divisors_loop
+
+end_divisor_check:
+    # Verificar se o número tem apenas dois divisores
+    li t3, 2              # t3 = 2
+    beq t1, t3, is_prime  # Se divisor_count == 2, é primo
+    j not_prime           # Caso contrário, não é primo
+
+is_prime:
+    li a1, 1              # n é primo, a1 = 1
+    jr ra                 # Retornar da função
+
+not_prime:
+    li a1, 0              # n não é primo, a1 = 0
+    jr ra                 # Retornar da função
+
+# Finalização do programa
+wrong_input:
+    # Imprimir "Entradas invalidas\n"
+    la a0, prompt
+    li a7, 4
+    ecall
+    j exit
+
+not_prime_msg:
+    # Imprimir "O modulo nao eh primo\n"
+    la a0, not_prime_text
+    li a7, 4
+    ecall
+
+exit:
+    li a7, 10         # syscall para sair
+    ecall

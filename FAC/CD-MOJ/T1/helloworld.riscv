@@ -1,0 +1,7 @@
+.data
+	hello: .asciz "Ola Mundo\n"
+.text
+
+li a7, 4  # colocando o serviço de imprimir string na syscall 
+la a0, hello # passando o endereço da minha string hello para o resgistrador a0
+ecall # chamaando a função

@@ -1,0 +1,231 @@
+.data
+break_line:    	.asciz "\n"
+invalid_input:    		.asciz "entrada invalida.\n"
+
+.text
+.globl _main
+
+_main:
+    li a7, 5          # Syscall de leitura de numero
+    ecall             
+
+    ble a0, zero, error # Verifica se o número lido é negativo (`a0 <= 0`). Se for, salta para o rótulo `error`.
+    
+	li	t1, 0
+	li	t2, 1111		# Limite inferior de condição
+	li	t3, 9999		# Limite superior de condição
+verifica_igualdade_num:
+	add 	t1, t1, t2		# t1 = t1 + 1111
+	beq	t0, t1, error	# Se t0 for igual à 1111, 2222, 3333... jump invalido
+	beq	t1, t3, continua	# Se t1 = t3 = 9999, termina o loop e continua o código
+	j	verifica_igualdade_num
+
+continua:
+    li t0, 6174        # Carrega o valor 6174 (constante mágica de Kaprekar para 4 dígitos) no registrador `t0`.
+    beq a0, t0, sucess # Compara o número lido (`a0`) com 6174. Se forem iguais, salta para o rótulo `sucess`.
+
+    jal separate_digits # Salta e armazena o endereço de retorno para a sub-rotina `separate_digits` (separação de dígitos).
+
+    add s0, a4, zero          # Move o dígito das milhares (retornado por `separate_digits`) para `s0`.
+    add s1, a5, zero          # Move o dígito das centenas para `s1`.
+    add s2, a6, zero          # Move o dígito das dezenas para `s2`.
+    add s3, a7, zero          # Move o dígito das unidades para `s3`.
+
+    beq s0, zero, error # Verifica se o dígito das milhares é zero. Se for, salta para o rótulo `error`.
+
+    bne s0, s1, no_error # Verifica se o dígito das milhares (`s0`) é diferente do dígito das centenas (`s1`).
+    bne s1, s2, no_error # Verifica se o dígito das centenas (`s1`) é diferente do dígito das dezenas (`s2`).
+    bne s2, s3, no_error # Verifica se o dígito das dezenas (`s2`) é diferente do dígito das unidades (`s3`).
+
+    
+error:
+	li a7, 4             # Código do syscall para exibir string.
+    la a0, invalid_input     # Carrega o endereço da mensagem de erro no registrador `a0`.
+    ecall                # Faz a chamada do sistema para imprimir a mensagem de erro.
+    j exit       # Salta para o rótulo `exit`, encerrando o programa.
+
+no_error:
+    # Move os dígitos separados de `s0` a `s3` para `a0` a `a3` (necessário para a função `digits_sort`).
+    add a0, s0, zero
+    add a1, s1, zero
+    add a2, s2, zero
+    add a3, s3, zero
+
+    jal digits_sort             # Chama a função `digits_sort` para ordenar os dígitos em ordem crescente.
+
+    # Após a ordenação, os dígitos ordenados são retornados em `a4` a `a7`.
+    add s4, a4, zero            # Primeiro dígito (menor) é movido para `s4`.
+    add s5, a5, zero            # Segundo dígito para `s5`.
+    add s6, a6, zero            # Terceiro dígito para `s6`.
+    add s7, a7, zero            # Quarto dígito (maior) para `s7`.
+
+    # Constantes para multiplicação, usadas para reconstruir números.
+    li t0, 10            # Constante para casa decimal (dezenas).
+    li t1, 100           # Constante para casa decimal (centenas).
+    li t2, 1000          # Constante para casa decimal (milhares).
+
+    # Reconstrói o número crescente em `s8`.
+    mul t3, t2, s4       # Multiplica o menor dígito por 1000.
+    add s8, t3, zero            # Armazena o resultado inicial em `s8`.
+    mul t3, t1, s5       # Multiplica o segundo menor dígito por 100.
+    add s8, s8, t3       # Soma ao número crescente parcial.
+    mul t3, t0, s6       # Multiplica o terceiro menor dígito por 10.
+    add s8, s8, t3       # Soma ao número crescente parcial.
+    add s8, s8, s7       # Soma o maior dígito para formar o número crescente completo.
+
+    # Reconstrói o número decrescente em `s9`.
+    mul t3, t2, s7       # Multiplica o maior dígito por 1000.
+    add s9, t3, zero            # Armazena o resultado inicial em `s9`.
+    mul t3, t1, s6       # Multiplica o segundo maior dígito por 100.
+    add s9, s9, t3       # Soma ao número decrescente parcial.
+    mul t3, t0, s5       # Multiplica o terceiro maior dígito por 10.
+    add s9, s9, t3       # Soma ao número decrescente parcial.
+    add s9, s9, s4       # Soma o menor dígito para formar o número decrescente completo.
+
+    # Subtrai o número crescente do número decrescente para calcular a diferença.
+    sub s10, s9, s8      # Armazena o resultado da subtração em `s10`.
+
+    li t0, 6174          # Carrega o número mágico de Kaprekar (6174) em `t0`.
+    addi s11, s11, 1     # Incrementa o contador de iterações em `s11`.
+    beq s10, t0, sucess  # Se a diferença for igual a 6174, salta para o rótulo `sucess`.
+
+    add a0, s10, zero           # Move a diferença calculada para `a0`.
+
+    jal separate_digits  # Chama a sub-rotina `separate_digits` para separar os dígitos da diferença.
+
+    # Após separar os dígitos, move-os para os registradores `s0` a `s3`.
+    add s0, a4, zero            # Primeiro dígito para `s0`.
+    add s1, a5, zero            # Segundo dígito para `s1`.
+    add s2, a6, zero            # Terceiro dígito para `s2`.
+    add s3, a7, zero            # Quarto dígito para `s3`.
+
+    j no_error           # Volta ao início do bloco `no_error` para repetir o processo.
+
+    
+print_number:
+    # Imprime os dígitos separados (`s4`, `s5`, `s6`, `s7`) um por um.
+    add a0, s4, zero          # Move o primeiro dígito para `a0` (preparando para impressão).
+    li a7, 1           # Código do syscall para imprimir um inteiro.
+    ecall              # Faz a chamada do sistema para imprimir o primeiro dígito.
+
+    add a0, s5, zero          # Move o segundo dígito para `a0`.
+    li a7, 1           # Código do syscall para imprimir um inteiro.
+    ecall              # Faz a chamada do sistema para imprimir o segundo dígito.
+
+    add a0, s6, zero          # Move o terceiro dígito para `a0`.
+    li a7, 1           # Código do syscall para imprimir um inteiro.
+    ecall              # Faz a chamada do sistema para imprimir o terceiro dígito.
+
+    add a0, s7, zero          # Move o quarto dígito para `a0`.
+    li a7, 1           # Código do syscall para imprimir um inteiro.
+    ecall              # Faz a chamada do sistema para imprimir o quarto dígito.
+
+    la a0, break_line # Carrega o endereço da string de quebra de linha em `a0`.
+    li a7, 4           # Código do syscall para imprimir uma string.
+    ecall              # Faz a chamada do sistema para imprimir a quebra de linha.
+
+exit:
+    li a7, 10          # Código do syscall para sair do programa.
+    ecall              # Faz a chamada do sistema para encerrar o programa.
+
+    
+separate_digits:
+
+    # Constantes para divisores das casas decimais
+    li t0, 1000            # t0 = 1000 (divisor para a casa dos milhares)
+    li t1,  100            # t1 = 100  (divisor para a casa das centenas)
+    li t2,   10            # t2 = 10   (divisor para a casa das dezenas)
+
+    # Calcula o dígito da casa dos milhares (digit1)
+    divu t3, a0, t0        # t3 = a0 / 1000 (extrai o dígito da casa dos milhares)
+    mul  t4, t3, t0        # t4 = t3 * 1000 (reconstrói o valor da casa dos milhares)
+    sub  t5, a0, t4        # t5 = a0 - t4   (obtém o resto após remover a casa dos milhares)
+
+    # Calcula o dígito da casa das centenas (digit2)
+    divu t6, t5, t1        # t6 = t5 / 100  (extrai o dígito da casa das centenas)
+    mul  a0, t6, t1        # a0 = t6 * 100  (reconstrói o valor da casa das centenas)
+    sub  t5, t5, a0        # t5 = t5 - a0   (atualiza o resto, removendo a casa das centenas)
+
+    # Calcula o dígito da casa das dezenas (digit3)
+    divu a1, t5, t2        # a1 = t5 / 10   (extrai o dígito da casa das dezenas)
+    mul  a2, a1, t2        # a2 = a1 * 10   (reconstrói o valor da casa das dezenas)
+
+    # Calcula o dígito da casa das unidades (digit4)
+    sub  a3, t5, a2        # a3 = t5 - a2   (o restante é o dígito da casa das unidades)
+
+    # Armazena os dígitos nos registradores de saída
+    add   a4, t3, zero            # a4 = digit1 (milhares)
+    add   a5, t6, zero            # a5 = digit2 (centenas)
+    add   a6, a1, zero            # a6 = digit3 (dezenas)
+    add   a7, a3, zero            # a7 = digit4 (unidades)
+
+    jr ra                  # Retorna para a função chamadora
+
+    
+digits_sort:
+    # Move os dígitos de entrada para registradores temporários
+    add t0, a0, zero         # t0 = a0 (primeiro dígito)
+    add t1, a1, zero         # t1 = a1 (segundo dígito)
+    add t2, a2, zero         # t2 = a2 (terceiro dígito)
+    add t3, a3, zero         # t3 = a3 (quarto dígito)
+
+    # Começa o Insertion Sort
+    # Considera o segundo elemento (t1) e o insere na posição correta
+Insertion_1:
+    blt t0, t1, Insertion_2  # Se t0 < t1, avança para o próximo
+    add t4, t0, zero         # Caso contrário, troca t0 e t1
+    add t0, t1, zero
+    add t1, t4, zero
+
+Insertion_2:
+    # Considera o terceiro elemento (t2) e o insere na posição correta
+    blt t1, t2, Check_t0_t2  # Se t1 < t2, verifica apenas t0 e t2
+    add t4, t1, zero         # Caso contrário, troca t1 e t2
+    add t1, t2, zero
+    add t2, t4, zero
+
+Check_t0_t2:
+    blt t0, t1, Insertion_3  # Verifica t0 e t1 para garantir a ordem
+    add t4, t0, zero         # Troca t0 e t1 se necessário
+    add t0, t1, zero
+    add t1, t4, zero
+
+Insertion_3:
+    # Considera o quarto elemento (t3) e o insere na posição correta
+    blt t2, t3, Check_t1_t3  # Se t2 < t3, verifica os anteriores
+    add t4, t2, zero         # Caso contrário, troca t2 e t3
+    add t2, t3, zero
+    add t3, t4, zero
+
+Check_t1_t3:
+    blt t1, t2, Check_t0_t3  # Verifica t1 e t2
+    add t4, t1, zero         # Troca t1 e t2 se necessário
+    add t1, t2, zero
+    add t2, t4, zero
+
+Check_t0_t3:
+    blt t0, t1, Finish       # Verifica t0 e t1
+    add t4, t0, zero         # Troca t0 e t1 se necessário
+    add t0, t1, zero
+    add t1, t4, zero
+
+Finish:
+    # Armazena os dígitos ordenados nos registradores de saída
+    add a4, t0, zero         # Menor dígito
+    add a5, t1, zero         # Segundo menor dígito
+    add a6, t2, zero         # Terceiro menor dígito
+    add a7, t3, zero         # Maior dígito
+
+
+    jr ra             # Retorna para a função chamadora
+
+sucess:
+    add a0, s11, zero         # Move o contador de iterações (`s11`) para `a0` (preparando para impressão).
+    li a7, 1           # Código do syscall para imprimir um inteiro.
+    ecall              # Faz a chamada do sistema para imprimir o número de iterações.
+
+    la a0, break_line # Carrega o endereço da string de quebra de linha em `a0`.
+    li a7, 4           # Código do syscall para imprimir uma string.
+    ecall              # Faz a chamada do sistema para imprimir a quebra de linha.
+
+    j exit     # Salta para o rótulo `exit` para encerrar o programa.

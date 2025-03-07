@@ -1,0 +1,99 @@
+.data
+	breakLine: .asciz "\n"
+	minII: .word 1
+	minMI: .word 30
+	minMM: .word 50
+	minMS: .word 70
+	minSS:  .word 90
+	SR: .asciz "SR"
+	II: .asciz "II"
+	MI: .asciz "MI"
+	MM: .asciz "MM"
+	MS: .asciz "MS"
+	SS: .asciz "SS"
+	
+.text
+
+## Nota	Conceito
+## 0	SR
+## 1 a 29	II
+## 30 a 49	MI
+## 50 a 69	MM
+## 70 a 89	MS
+## 90 a 100	SS
+
+	# Ler a nota
+	li a7, 5         	# Chamada de sistema para ler o valor da nota
+	ecall
+	add t0, a0, zero       	# Armazena o valor lido em t0 (t0 = a0 + zero)
+	
+	# Verificações iniciais
+	li t3, 101		# Carregando o valor de 101 para comparar se nota >= 101
+	li t4, 0		# Carregando o valor 0 para comparar se nota < 0
+	blt t0, t4, end		# t0 >= 101 ?
+	bge t0, t3, end		# t0 < 0 ?
+	
+	# Verificações
+	la t1, minSS		# Carregando o endereço de minSS (90) para t1
+	lw t2, 0(t1)		# Carregando o valor armazenado no endereço t1 (90) para t2
+	bge t0, t2, finishSS    # branch if greater than or equal to minSS = 90 --> t0 >= 90?
+	la t1, minMS
+	lw t2, 0(t1)
+	bge t0, t2, finishMS  	# branch if greater than or equal to minMS = 70 --> t0 >= 70
+	la t1, minMM
+	lw t2, 0(t1)
+	bge t0, t2, finishMM  	# branch if greater than or equal to minMM = 50 --> t0 >= 50?
+	la t1, minMI
+	lw t2, 0(t1)
+	bge t0, t2, finishMI  	# branch if greater than or equal to minMI = 30 --> t0 >= 30?
+	la t1, minII
+	lw t2, 0(t1)
+	bge t0, t2, finishII  	# branch if greater than or equal to minII = 1  --> t0 >= 1?
+	j finishSR
+	
+finishSS:
+	li a7, 4		# Syscall para imprimir uma string
+	la a0, SS	# Carregando a mensagem "SS" ao endereço de a0
+	ecall
+	j end	
+
+finishMS:
+	li a7, 4		# Syscall para imprimir uma string
+	la a0, MS	# Carregando a mensagem "MS" ao endereço de a0
+	ecall	
+	j end		
+
+finishMM:
+	li a7, 4		# Syscall para imprimir uma string
+	la a0, MM	# Carregando a mensagem "MM" ao endereço de a0
+	ecall	
+	j end		
+	
+finishMI:
+	li a7, 4		# Syscall para imprimir uma string
+	la a0, MI	# Carregando a mensagem "MI" ao endereço de a0
+	ecall
+	j end	
+
+finishII:
+	li a7, 4		# Syscall para imprimir uma string
+	la a0, II	# Carregando a mensagem "II" ao endereço de a0
+	ecall	
+	j end	
+				
+finishSR:
+	li a7, 4		# Syscall para imprimir uma string
+	la a0, SR	# Carregando a mensagem "SR" ao endereço de a0
+	ecall
+	j end	
+
+end:
+	li a7, 4		# Syscall para imprimir uma string
+	la a0, breakLine	# Carregando a mensagem "\n" ao endereço de a0
+	ecall	
+	# Finaliza o programa
+    	li a7, 10        	# Syscall para encerrar o programa
+    	ecall	
+	
+	
+	

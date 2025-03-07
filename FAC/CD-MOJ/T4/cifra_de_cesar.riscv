@@ -1,0 +1,95 @@
+.data
+buffer: .space 33          # Buffer para armazenar a string de entrada (32 caracteres + nulo)
+newline: .asciz "\n"       # String para nova linha (usada ao final)
+
+.text
+.globl main
+main:
+    # Carregar valores ASCII para verificação de letras
+    li s1, 65              # 'A' em ASCII (limite inferior para Maiúsculas)
+    li s2, 90              # 'Z' em ASCII (limite superior para Maiúsculas)
+    li s3, 97              # 'a' em ASCII (limite inferior para minúsculas)
+    li s4, 122             # 'z' em ASCII (limite superior para minúsculas)
+    
+    # Ler o valor do shift (inteiro) via console
+    li a7, 5               # Syscall 5: read_int
+    ecall
+    mv s0, a0              # Armazenar o shift em s0 (registrador salvo)
+
+    # Ler a string a ser criptografada
+    li a7, 8               # Syscall 8: read_string
+    la a0, buffer          # Carregar endereço do buffer em a0
+    li a1, 33              # Tamanho máximo da entrada (32 caracteres + nulo)
+    ecall
+
+    # Remover a quebra de linha (\n) da string lida
+    la t0, buffer          # Carregar endereço do buffer em t0
+loop_remove_newline:
+    lb t1, 0(t0)           # Carregar byte atual da string em t1
+    beqz t1, process_input # Se for nulo, terminar
+    li t2, 10              # ASCII para '\n'
+    beq t1, t2, replace_newline # Se for '\n', substituir
+    addi t0, t0, 1         # Avançar para o próximo caractere
+    j loop_remove_newline  # Repetir loop
+
+replace_newline:
+    sb zero, 0(t0)         # Substituir '\n' por '\0'
+
+process_input:
+    la t0, buffer          # Reiniciar ponteiro para o início do buffer
+
+process_char:
+    lb t1, 0(t0)           # Carregar caractere atual em t1
+    beqz t1, end           # Se for nulo, terminar
+
+    # Verificar se o caractere é uma letra
+    blt t1, s1, print_char # Ignorar se < 'A'
+    bgt t1, s4, print_char # Ignorar se > 'z'
+    ble t1, s2, is_upper   # Se <= 'Z', é maiúscula
+    bge t1, s3, is_lower   # Se >= 'a', é minúscula
+    j print_char           # Não é letra (ex: entre 'Z' e 'a')
+
+is_upper:
+    # Shift para letras maiúsculas (A-Z)
+    li t5, 26              # Tamanho do alfabeto
+    rem t3, s0, t5         # Calcular shift efetivo (shift % 26)
+    beqz t3, print_char    # Se shift efetivo = 0, não há mudança
+    bgtz t3, apply_shift_upper # Se positivo, aplicar shift
+    addi t3, t3, 26        # Se negativo, ajustar para equivalente positivo (ex: -3 → 23)
+
+apply_shift_upper:
+    add t1, t1, t3         # Aplicar shift ao caractere
+    ble t1, s2, print_char # Se <= 'Z', está dentro do intervalo
+    sub t1, t1, t5         # Se > 'Z', fazer wrap around (voltar 26 posições)
+    j print_char
+
+is_lower:
+    # Shift para letras minúsculas (a-z)
+    li t5, 26              # Tamanho do alfabeto
+    rem t3, s0, t5         # Calcular shift efetivo (shift % 26)
+    beqz t3, print_char    # Se shift efetivo = 0, não há mudança
+    bgtz t3, apply_shift_lower # Se positivo, aplicar shift
+    addi t3, t3, 26        # Se negativo, ajustar para equivalente positivo
+
+apply_shift_lower:
+    add t1, t1, t3         # Aplicar shift ao caractere
+    ble t1, s4, print_char # Se <= 'z', está dentro do intervalo
+    sub t1, t1, t5         # Se > 'z', fazer wrap around (voltar 26 posições)
+    j print_char
+
+print_char:
+    mv a0, t1              # Carregar caractere processado em a0
+    li a7, 11              # Syscall 11: print_char
+    ecall
+    addi t0, t0, 1         # Avançar para o próximo caractere
+    j process_char         # Processar próximo caractere
+
+end:
+    # Imprimir nova linha ao final
+    li a7, 4               # Syscall 4: print_string
+    la a0, newline         # Carregar endereço de newline
+    ecall
+
+    # Encerrar o programa
+    li a7, 10              # Syscall 10: exit
+    ecall

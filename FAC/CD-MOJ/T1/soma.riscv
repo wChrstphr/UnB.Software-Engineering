@@ -1,0 +1,30 @@
+.data
+	breakLine: .asciz "\n"
+
+.text
+
+main:
+	# Ler o primeiro número
+	li a7, 5         	# Chamada de sistema para ler um int (primeiro numero)
+	ecall
+	add t0, a0, zero       	# Armazena o valor lido em t0 (t0 = a0 + zero)
+	
+	# Ler o segundo número        	# Chamada de sistema para ler um int (segundo numero)
+    	ecall
+    	add t1, a0 , zero       # Armazena o valor lido em t1 (t1 = a0 + zero)
+
+    	# Soma os dois números
+    	add t2, t0, t1   	# t2 = t0 + t1
+
+    	# Imprime o resultado
+    	add a0, t2, zero      	# Atribui o valor de t2 para a0 (para uso na syscall)
+    	li a7, 1         	# Syscall para imprimir inteiro
+    	ecall
+    
+	li a7, 4		# Syscall para imprimir uma string
+	la a0, breakLine	# Carregando a mensagem "\n" ao endereço de a0
+	ecall			
+	
+    	# Finaliza o programa
+    	li a7, 10        	# Syscall para encerrar o programa
+    	ecall
