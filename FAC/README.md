@@ -1,6 +1,6 @@
 # Repositório de Trabalhos da Disciplina Fundamentos da Arquitetura de Computadores (FAC)
 
-Este repositório armazena **exercícios resolvidos em RISC-V** desenvolvidos durante a disciplina de **Fundamentos da Arquitetura de Computadores** na Universidade de Brasília (FCTE), utilizando o simulador RARS (RISC-V Assembler and Runtime Simulator).
+Este repositório armazena **exercícios resolvidos em RISC-V** e o **resumo da ma´teria**, desenvolvidos durante a disciplina de **Fundamentos da Arquitetura de Computadores** na Universidade de Brasília (FCTE), utilizando o simulador RARS (RISC-V Assembler and Runtime Simulator).
 
 ## Descrição 
 Neste repositório, você encontrará implementações de programas em **Assembly RISC-V**, abordando conceitos como:
