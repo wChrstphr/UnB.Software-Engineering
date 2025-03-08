@@ -414,3 +414,8 @@ Modelo de computação que integra CPU, memória e dispositivos de E/S através 
 ## Impacto Histórico  
 - Base para todos os computadores de propósito geral pós-1945 (ex: EDVAC, IAS Machine).  
 - Influenciou projetos mesmo em sistemas com elementos Harvard (ex: ARM Cortex-M).  
+
+
+---
+
+*Com ❤️ e 📚 por Christopher (https://github.com/wChrstphr)*
