@@ -120,13 +120,20 @@ graph TD
 > Quando o sistema vai ler um arquivo sequencial, o primeiro bloco que o HD trás, de mil alunos por exemplo, já posso trazer o próximo bloco de alunos. Em grafos, o sitema lê o primeiro bloco, aproveito apenas o primeiro aluno dos mil e depois busca outro bloco, para aproveitar apenas o primeiro novamente, gerando latência.
 
 #### Conjunto de Relacionamentos - Restrição de Participação
-**Participação Total**
-- Toda entidade deve obrigatoriamente participar de um relacionamento, sendo assim associada a uma entidade.
+**Participação Total ou Dependência Existencial**
+- Toda entidade de um CE deve obrigatoriamente participar de ao menos um relacionamento do CR, sendo assim associada a uma entidade.
+- Uma entidade só deve exisit se estiver associada a outra entidade por meio de um relacionamenti.
 
-**Notação DER**: linha dupla conectando o CE ao CR
+**Notação DER**: linha dupla conectando o CE ao CR.
 
-Exemplo: toda entidade **Disciplina** participa de um relacionamento **Possui* e deve estar associada a uma entidade **Curso**.
-![paritipação-total](/SBD1/image.png)
+Exemplo: toda entidade **Disciplina** participa de um relacionamento **Possui** e deve estar associada a uma entidade **Curso**.
+![participação-total](/SBD1/image-8.png)
+
+**Participação Parcial**
+- Nem todas as entidades de um CE participam de um CR. Podendo existir sem estar associada a outra.
+**Notação DER**: linha simples conectando o CE ao CR.
+![participação-parcial](/SBD1/image-9.png)
+
 #### Conjunto de Relacionamentos - Entidade Fraca
 **Entidade Fraca**
 - Não possui identificador único (chave), ou atributo identificador **univoco semânticamente** do domínio da aplicação 
