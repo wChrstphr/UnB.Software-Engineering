@@ -108,7 +108,68 @@ for every w in Adj(v)
 2. **DFS(G,s)** Quando passa pela inicial *s*, **retorna um unico componente**. Faz *backgracking* (chamadas recursivas).
 3. **DFS(G,s,t)** Já o último pode estar faltando um nó, pois para quando encontrar *t*, e **retorna um conjunto conectado** até *t*.
 
+#### Connectivity
+- Forte
+- Fraco
+- Não-conectado
+
+**Def**: Nó *u* e *v* são **mutuamente alcançáveis** se existe um caminho de *u* para *v* e também um caminho de *v* para *u*.
+
+**Def**: Um grafo é **fortemente conectado** se todo par de nós é mutuamente alcançável.
+
+- Ex: árvores são exemplos de grafos fracamente conectados
+
+Algorithm 1
+
+Algorithm 2
+
+**Lemma**: Let *s* be any node. *G* is strongly connected if every node is reachable from *s*, and *s* is reachable from every node. *s* is an "intermediate node".
+- Path from *u* to *v*: concatenate *u-s* path with *s-v* path.
+- Path from *v* to *u*: concatenate *v-s* path with *v-u* path.
+![connectivity-from-s](image.png)
+- Every strongly connected graph can be represented as the image above
 ---
+
+### Directed Acyclis Graph
+**Precedence Constrainsts**
+- Sink node: a node that doesn't point to any other node
+- Source node: a node that points, but isn't pointed by other nodes
+
+```mermaid
+graph TD
+    A[Source Node] --> B[L] --> C[Sink Node]
+```
+
+**Topological Ordering Algorithm**
+
+![topological-order](image-1.png)
+| Ordem |
+|---|
+**v1** -> v4 -> v5 -> v7
+**v2** -> v3 -> v5 -> v6
+**v3** -> v4 -> v5
+**v4** -> v5
+**v5** -> v6 -> v7
+**v6** -> v7
+**v7** -> 
+
+Nó | Contador
+|---|---
+v1 | 0
+v2 |0
+v3 |1
+v4 |2
+v5 |4
+v6 |2
+v7 |3
+
+Passos do Algorítmo:
+1. Escolher o de menor grau (procurar o menor do array (O(n))
+2. Verifica se é 0 (O(1))
+3. Colocar na ordenaçção topológica, inserção em fila (O(1))
+4. Marcar como deletado (O(1))
+5. Em cada vizinho dsse nó, decrementar o valor (O(grau(v)))
+
 
 #### Macete para trabalhar com Grafos
 1. Tentar transformar todos os problemas para o domínio de grafos.
